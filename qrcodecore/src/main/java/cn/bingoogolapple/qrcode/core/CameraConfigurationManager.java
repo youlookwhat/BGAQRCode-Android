@@ -14,6 +14,8 @@ final class CameraConfigurationManager {
     private final Context mContext;
     private Point mCameraResolution;
     private Point mPreviewResolution;
+    /// 保存图片的时候用
+    private int displayOrientation;
 
     CameraConfigurationManager(Context context) {
         mContext = context;
@@ -61,8 +63,13 @@ final class CameraConfigurationManager {
                     previewFpsRange[Camera.Parameters.PREVIEW_FPS_MAX_INDEX]);
         }
 
-        camera.setDisplayOrientation(getDisplayOrientation());
+        displayOrientation = getDisplayOrientation();
+        camera.setDisplayOrientation(displayOrientation);
         camera.setParameters(parameters);
+    }
+
+    public int getOrientation() {
+        return displayOrientation;
     }
 
     /**

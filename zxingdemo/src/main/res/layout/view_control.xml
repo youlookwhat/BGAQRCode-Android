@@ -113,4 +113,8 @@
         android:id="@+id/choose_qrcde_from_gallery"
         style="@style/WrapWrapTv"
         android:text="识别图片中的码" />
+    <TextView
+        android:id="@+id/bitmap_save"
+        style="@style/WrapWrapTv"
+        android:text="生成bitmap" />
 </cn.bingoogolapple.flowlayout.BGAFlowLayout>

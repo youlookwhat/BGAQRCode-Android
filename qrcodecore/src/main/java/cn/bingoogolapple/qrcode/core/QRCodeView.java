@@ -42,6 +42,8 @@ public abstract class QRCodeView extends RelativeLayout implements Camera.Previe
     private static final int AMBIENT_BRIGHTNESS_WAIT_SCAN_TIME = 150;
     // 亮度低的阀值
     private static final int AMBIENT_BRIGHTNESS_DARK = 60;
+    // camera显示的orientation
+    protected int displayOrientation;
 
     public QRCodeView(Context context, AttributeSet attributeSet) {
         this(context, attributeSet, 0);
@@ -173,6 +175,7 @@ public abstract class QRCodeView extends RelativeLayout implements Camera.Previe
             mCameraId = cameraId;
             mCamera = Camera.open(cameraId);
             mCameraPreview.setCamera(mCamera);
+            displayOrientation = mCameraPreview.getDisplayOrientation();
         } catch (Exception e) {
             e.printStackTrace();
             if (mDelegate != null) {

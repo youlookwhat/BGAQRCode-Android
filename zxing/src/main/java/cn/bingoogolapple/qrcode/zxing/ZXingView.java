@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.hardware.Camera;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 
@@ -36,6 +37,13 @@ public class ZXingView extends QRCodeView {
         super(context, attrs, defStyleAttr);
     }
 
+    public int getDisplayOrientation(){
+        return displayOrientation;
+    }
+
+    public Camera getCamera(){
+        return mCamera;
+    }
     @Override
     protected void setupReader() {
         mMultiFormatReader = new MultiFormatReader();

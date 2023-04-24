@@ -38,6 +38,12 @@
         app:qrcv_topOffset="65dp"
         app:qrcv_verticalBias="-1" />
 
+    <ImageView
+        android:layout_centerInParent="true"
+        android:id="@+id/iv_show"
+        android:layout_width="120dp"
+        android:layout_height="180dp"/>
+
     <include layout="@layout/toolbar" />
 
     <include layout="@layout/view_control" />

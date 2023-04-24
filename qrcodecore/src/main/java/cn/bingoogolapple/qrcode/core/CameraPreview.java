@@ -19,6 +19,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private float mOldDist = 1f;
     private CameraConfigurationManager mCameraConfigurationManager;
     private Delegate mDelegate;
+    // 相机的displayOrientation，用来调整bitmap方位的时候使用
+    private int displayOrientation;
 
     public CameraPreview(Context context) {
         super(context);
@@ -81,6 +83,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 mCamera.setPreviewDisplay(surfaceHolder);
 
                 mCameraConfigurationManager.setDesiredCameraParameters(mCamera);
+                displayOrientation = mCameraConfigurationManager.getOrientation();
                 mCamera.startPreview();
                 if (mDelegate != null) {
                     mDelegate.onStartPreview();
@@ -214,7 +217,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     private void handleFocusMetering(float originFocusCenterX, float originFocusCenterY,
-            int originFocusWidth, int originFocusHeight) {
+                                     int originFocusWidth, int originFocusHeight) {
         try {
             boolean isNeedUpdate = false;
             Camera.Parameters focusMeteringParameters = mCamera.getParameters();
@@ -315,5 +318,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     interface Delegate {
         void onStartPreview();
+    }
+
+    /**
+     * 相机的displayOrientation
+     */
+    public int getDisplayOrientation() {
+        return displayOrientation;
     }
 }

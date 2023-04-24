@@ -2,12 +2,17 @@ package cn.bingoogolapple.qrcode.zxingdemo;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
@@ -27,12 +32,14 @@ public class TestScanActivity extends AppCompatActivity implements QRCodeView.De
     private static final int REQUEST_CODE_CHOOSE_QRCODE_FROM_GALLERY = 666;
 
     private ZXingView mZXingView;
+    private ImageView iv_show;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test_scan);
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
 
+        iv_show = findViewById(R.id.iv_show);
         mZXingView = findViewById(R.id.zxingview);
         mZXingView.setDelegate(this);
     }
@@ -198,7 +205,36 @@ public class TestScanActivity extends AppCompatActivity implements QRCodeView.De
                         .build();
                 startActivityForResult(photoPickerIntent, REQUEST_CODE_CHOOSE_QRCODE_FROM_GALLERY);
                 break;
+            case R.id.bitmap_save:
+                mZXingView.getCamera().takePicture(null, null, new Camera.PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] bytes, Camera camera) {
+                        mZXingView.getCamera().startPreview();
+                        Bitmap bitmap = null;
+                        try {
+                            bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                            bitmap = getRotatedBitmap(bitmap, mZXingView.getDisplayOrientation());
+                            iv_show.setImageBitmap(bitmap);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                break;
         }
+    }
+
+    /**
+     * 旋转图片
+     * @param bitmap
+     * @param rotation
+     * @Return
+     */
+    public static Bitmap getRotatedBitmap(Bitmap bitmap, int rotation) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(rotation);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
     }
 
     @Override
