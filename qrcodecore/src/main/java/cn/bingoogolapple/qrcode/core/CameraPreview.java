@@ -31,7 +31,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mCamera = camera;
         if (mCamera != null) {
             mCameraConfigurationManager = new CameraConfigurationManager(getContext());
-            mCameraConfigurationManager.initFromCameraParameters(mCamera);
+            mCameraConfigurationManager.initFromCameraParameters(mCamera,this);
 
             if (mPreviewing) {
                 requestLayout();

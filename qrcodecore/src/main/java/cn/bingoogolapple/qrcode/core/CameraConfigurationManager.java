@@ -1,10 +1,12 @@
 package cn.bingoogolapple.qrcode.core;
 
 import android.content.Context;
+import android.graphics.ImageFormat;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.view.Display;
 import android.view.Surface;
+import android.view.SurfaceView;
 import android.view.WindowManager;
 
 import java.util.Collection;
@@ -16,12 +18,13 @@ final class CameraConfigurationManager {
     private Point mPreviewResolution;
     /// 保存图片的时候用
     private int displayOrientation;
+    private Camera.Parameters mParameters;
 
     CameraConfigurationManager(Context context) {
         mContext = context;
     }
 
-    void initFromCameraParameters(Camera camera) {
+    void initFromCameraParameters(Camera camera, SurfaceView surfaceView) {
         Point screenResolution = BGAQRCodeUtil.getScreenResolution(mContext);
         Point screenResolutionForCamera = new Point();
         screenResolutionForCamera.x = screenResolution.x;
@@ -32,7 +35,8 @@ final class CameraConfigurationManager {
             screenResolutionForCamera.y = screenResolution.x;
         }
 
-        mPreviewResolution = getPreviewResolution(camera.getParameters(), screenResolutionForCamera);
+//        mPreviewResolution = getPreviewResolution(camera.getParameters(), screenResolutionForCamera);
+        initParameters(camera, surfaceView);
 
         if (BGAQRCodeUtil.isPortrait(mContext)) {
             mCameraResolution = new Point(mPreviewResolution.y, mPreviewResolution.x);
@@ -50,6 +54,61 @@ final class CameraConfigurationManager {
     Point getCameraResolution() {
         return mCameraResolution;
     }
+
+
+    //----------------处理预览和拍照时，图片尺寸问题---------↓↓↓↓↓↓----------------------------------------------
+    private boolean isSupportFocus(String focusMode) {
+        for (String mode : mParameters.getSupportedFocusModes()) {
+            if (focusMode.equals(mode)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void initParameters(final Camera camera, SurfaceView mSurfaceView) {
+        mParameters = camera.getParameters();
+        mParameters.setPreviewFormat(ImageFormat.NV21); //default
+//        mParameters.getSupportedPreviewFormats();
+//        mParameters.getSupportedPictureFormats();
+
+        if (isSupportFocus(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+            mParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+        } else if (isSupportFocus(Camera.Parameters.FOCUS_MODE_AUTO)) {
+            mParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+        }
+
+        List<Camera.Size> sizes1 = mParameters.getSupportedPreviewSizes();
+        int[] result1 = getOptimalSize(sizes1, mSurfaceView.getWidth(), mSurfaceView.getHeight());
+        mPreviewResolution = new Point(result1[0], result1[1]);
+        this.mParameters.setPreviewSize(result1[0], result1[1]);
+        List<Camera.Size> sizes2 = this.mParameters.getSupportedPictureSizes();
+        int[] result2 = this.getOptimalSize(sizes2, mSurfaceView.getWidth(), mSurfaceView.getHeight());
+        this.mParameters.setPictureSize(result2[0], result2[1]);
+        camera.setParameters(this.mParameters);
+
+//        camera.setParameters(mParameters);
+    }
+
+    private int[] getOptimalSize(List<Camera.Size> sizes, int currentWidth, int currentHeight) {
+        int i = 1;
+        int bestWidth = ((Camera.Size) sizes.get(0)).width;
+        int bestHeight = ((Camera.Size) sizes.get(0)).height;
+
+        for (float min = Math.abs((float) bestHeight / (float) bestWidth - (float) currentWidth / (float) currentHeight); i < sizes.size(); ++i) {
+            float current = Math.abs((float) ((Camera.Size) sizes.get(i)).height / (float) ((Camera.Size) sizes.get(i)).width - (float) currentWidth / (float) currentHeight);
+            if (current < min) {
+                min = current;
+                bestWidth = ((Camera.Size) sizes.get(i)).width;
+                bestHeight = ((Camera.Size) sizes.get(i)).height;
+            }
+        }
+
+        int[] result = new int[]{bestWidth, bestHeight};
+//        DebugUtil.error("glcamera", bestWidth + "//" + bestHeight);
+        return result;
+    }
+    //----------------处理预览和拍照时，图片尺寸问题----------↑↑↑↑↑↑---------------------------------------------
 
     void setDesiredCameraParameters(Camera camera) {
         Camera.Parameters parameters = camera.getParameters();
